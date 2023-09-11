@@ -1,0 +1,15 @@
+{
+    "name": "fireg/php_home_test",
+    "autoload": {
+        "files": [
+            "constants.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "ccominelli",
+            "email": "143107420+ccominelli@users.noreply.github.com"
+        }
+    ],
+    "require": {}
+}
