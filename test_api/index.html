@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document</title>
+</head>
+
+<body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <button onclick="myFunction()">Click me</button>
+    <script>
+        function myFunction() {
+
+            // WARNING: For GET requests, body is set to null by browsers.
+
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4) {
+                    console.log(this.responseText);
+                }
+            });
+
+            xhr.open("GET", "https://realtor.p.rapidapi.com/locations/v2/auto-complete?input=new%20york&limit=10");
+            xhr.setRequestHeader("X-RapidAPI-Key", "9ce027c8b4msh8949f7165ce9aa7p15db98jsn07db520d74bf");
+            xhr.setRequestHeader("X-RapidAPI-Host", "realtor.p.rapidapi.com");
+
+            xhr.send();
+        }
+    </script>
+</body>
+
+</html>

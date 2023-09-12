@@ -40,6 +40,10 @@ if (($_GET["action"] ?? null) === "delete") {
 }
 
 
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -116,18 +120,26 @@ if (($_GET["action"] ?? null) === "delete") {
         </p>
         <div class="container collapse" id="collapseExample">
             <div class="card card-body">
-                <form method="post" action="?action=append">
+                <form method="post" action="?action=append" id="formAppend">
                     <div class="row align-items-center mb-3">
-                        <div class="col-1">
-                            <label for="url_lp" class="col-form-label">URL LP</label>
+                        <div class="col-2">
+                            <label for="url_lp" class="col-form-label">URL "parlante"</label>
                         </div>
-                        <div class="col-11">
+                        <div class="col-10">
                             <input type="text" class="form-control" id="url_lp" name="url_lp" required>
                         </div>
                     </div>
                     <div class="row align-items-center mb-3">
-                        <div class="col-1">
-                            <label for="url_lh" class="col-form-label">URL LH</label>
+                        <div class="col-2">
+                            <label for="title" class="col-form-label">Titolo tab browser</label>
+                        </div>
+                        <div class="col-10">
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-2">
+                            <label for="url_lh" class="col-form-label">URL originale MailUp</label>
                         </div>
                         <div class="col-md-auto">
                             <span id="url_lh_prefix">{{DOMAIN}}<?= URL_ROOT_PORTION ?>/</span>
@@ -142,15 +154,7 @@ if (($_GET["action"] ?? null) === "delete") {
 
                         </div>
                     </div>
-                    <div class="row align-items-center mb-3">
-                        <div class="col-1">
-                            <label for="title" class="col-form-label">TITLE</label>
-                        </div>
-                        <div class="col-11">
-                            <input type="text" class="form-control" id="title" name="title" required>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" name="append" id="append">Add</button>
+                    <button class="btn btn-primary" name="append" id="btn_append">Add</button>
                 </form>
             </div>
         </div>
@@ -158,7 +162,7 @@ if (($_GET["action"] ?? null) === "delete") {
         <form method="post" id="form_add_row" action="?action=delete">
             <table class="table">
                 <tr>
-                    <th scope="col"><input class="form-check-input" type="checkbox" onclick="selectAll()"></th>
+                    <th scope="col"><input id="chkbox_selectAll" class="form-check-input" type="checkbox"></th>
                     <th scope="col">URL "parlante"</th>
                     <th scope="col">Titolo tab browser</th>
                     <th scope="col">URL originale MailUp</th>
@@ -199,26 +203,81 @@ if (($_GET["action"] ?? null) === "delete") {
             </table>
         </form>
     </div>
-    <script type="text/javascript">
-        window.onbeforeunload = function(event) {
-            if (document.getElementById('url_lp').value != '' || document.getElementById('url_lh').value != '' || document.getElementById('title').value != '') {
-                //event.preventDefault();
+    <script>
+        const formAppendInputs = Array.from(document.querySelector('#formAppend').querySelectorAll('input'));
+
+        function howManyEmptyFields() {
+            return formAppendInputs.filter(el => el.value === '').length;
+        }
+
+        function allFieldsCompiled() {
+            return howManyEmptyFields() === formAppendInputs.length;
+        }
+
+        function atLeastOneFieldCompiled() {
+            return howManyEmptyFields() !== formAppendInputs.length;
+        }
+
+        const preventPageUnload = function(event) {
+            if (atLeastOneFieldCompiled()) {
                 const message = 'Are you sure you want to leave?';
                 (event || window.event).returnValue = message;
                 return message;
             }
         }
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function(event) {
-                document.getElementById('delete').classList.add('disabled');
+
+        window.addEventListener(
+            'beforeunload',
+            preventPageUnload
+        );
+
+        document.getElementById('btn_append').addEventListener(
+            'click',
+            function(event) {
+                console.warn('btn_append clicked', howManyEmptyFields());
+                if (howManyEmptyFields() === 0) {
+                    window.removeEventListener(
+                        'beforeunload',
+                        preventPageUnload
+                    );
+                }
+            }
+        );
+
+
+        const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]:not(#chkbox_selectAll)'));
+        const chkbox_selectAll = document.getElementById('chkbox_selectAll');
+        chkbox_selectAll.addEventListener(
+            'change',
+            function() {
+                let checkboxes = document.querySelectorAll('input[name="opzione[]"]');
                 for (let i = 0; i < checkboxes.length; i++) {
-                    if (checkboxes[i].checked) {
-                        document.getElementById('delete').classList.remove('disabled');
-                        break;
+                    if (this.checked)
+                        checkboxes[i].checked = true;
+                    else
+                        checkboxes[i].checked = false;
+                }
+            }
+        );
+        checkboxes.forEach(checkbox => {
+            const btn_delete = document.getElementById('delete')
+            checkbox.addEventListener(
+                'change',
+                function(event) {
+                    if (checkboxes.filter(el => el.checked).length < checkboxes.length) {
+                        chkbox_selectAll.checked = false;
+                    } else if (checkboxes.filter(el => el.checked).length === checkboxes.length) {
+                        chkbox_selectAll.checked = true;
+                    }
+                    btn_delete.classList.add('disabled');
+                    for (let i = 0; i < checkboxes.length; i++) {
+                        if (checkboxes[i].checked) {
+                            btn_delete.classList.remove('disabled');
+                            break;
+                        }
                     }
                 }
-            });
+            );
         });
     </script>
 </body>
